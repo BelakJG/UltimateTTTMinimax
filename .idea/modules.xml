@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../PyTTTMinimax/.idea/PyTTTMinimax.iml" filepath="$PROJECT_DIR$/../PyTTTMinimax/.idea/PyTTTMinimax.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/UltimateTTTMinimax.iml" filepath="$PROJECT_DIR$/.idea/UltimateTTTMinimax.iml" />
     </modules>
   </component>
