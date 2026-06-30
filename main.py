@@ -48,16 +48,16 @@ def check_winner(full_board_string):
 def check_inner_board_winner(inner_board_string):
     #horizontals
     for i in range(0, 7, 3):
-        if inner_board_string[0 + i] != "." and (inner_board_string[0 + i] == inner_board_string[1 + i] == inner_board_string[2 + i]):
+        if (inner_board_string[0 + i] != "." and inner_board_string[0 + i] != "D") and (inner_board_string[0 + i] == inner_board_string[1 + i] == inner_board_string[2 + i]):
             return 1 if inner_board_string[0 + i] == "X" else -1
     #verticals
     for i in range(3):
-        if inner_board_string[0 + i] != "." and (inner_board_string[0 + i] == inner_board_string[3 + i] == inner_board_string[6 + i]):
+        if (inner_board_string[0 + i] != "." and inner_board_string[0 + i] != "D") and (inner_board_string[0 + i] == inner_board_string[3 + i] == inner_board_string[6 + i]):
             return 1 if inner_board_string[0 + i] == "X" else -1
     #diags
-    if inner_board_string[0] != "." and (inner_board_string[0] == inner_board_string[4] == inner_board_string[8]):
+    if (inner_board_string[0] != "." and inner_board_string[0] != "D") and (inner_board_string[0] == inner_board_string[4] == inner_board_string[8]):
         return 1 if inner_board_string[0] == "X" else -1
-    if inner_board_string[6] != "." and (inner_board_string[6] == inner_board_string[4] == inner_board_string[2]):
+    if (inner_board_string[6] != "." and inner_board_string[6] != "D") and (inner_board_string[6] == inner_board_string[4] == inner_board_string[2]):
         return 1 if inner_board_string[6] == "X" else -1
     #check draw
     if "." not in inner_board_string:
@@ -69,3 +69,4 @@ def check_inner_board_winner(inner_board_string):
 if __name__ == '__main__':
     board = "........./........./........./........./........./........./........./........./........."
     print_board(board)
+    print(check_winner(board))
