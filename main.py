@@ -1,17 +1,16 @@
 from functools import cache
+import math
 
-def print_board(board_string):
-    boards_array = board_string.split("/")
-
+def print_board(board):
     for outer_row in range(3):
         for inner_row in range(3):
             r = outer_row * 3 + inner_row
-            row = boards_array[r]
+            row = board[r]
 
             output = []
 
             for big_col in range(3):
-                chunk = row[big_col*3:(big_col+1)*3]
+                chunk = row[big_col * 3:(big_col + 1) * 3]
 
                 for inner_col, cell in enumerate(chunk):
                     if cell == ".":
@@ -29,44 +28,83 @@ def print_board(board_string):
             print("------+-------+------")
 
 @cache
-def check_winner(full_board_string):
-    inner_boards = full_board_string.split("/")
+def score_board(full_board):
     outer_board = ""
-    for inner_board in inner_boards:
-        result = check_inner_board_winner(inner_board)
-        if result == 1:
+    for inner_board in full_board:
+        result = score_inner_board(inner_board)
+        if result == math.inf:
             outer_board += "X"
-        elif result == -1:
+        elif result == -math.inf:
             outer_board += "O"
         elif result == 0:
             outer_board += "D"
         elif result is None:
             outer_board += "."
-    return check_inner_board_winner(outer_board)
+    return score_inner_board(outer_board)
 
 @cache
-def check_inner_board_winner(inner_board_string):
+def score_inner_board(inner_board_string):
     #horizontals
-    for i in range(0, 7, 3):
-        if (inner_board_string[0 + i] != "." and inner_board_string[0 + i] != "D") and (inner_board_string[0 + i] == inner_board_string[1 + i] == inner_board_string[2 + i]):
-            return 1 if inner_board_string[0 + i] == "X" else -1
-    #verticals
-    for i in range(3):
-        if (inner_board_string[0 + i] != "." and inner_board_string[0 + i] != "D") and (inner_board_string[0 + i] == inner_board_string[3 + i] == inner_board_string[6 + i]):
-            return 1 if inner_board_string[0 + i] == "X" else -1
-    #diags
-    if (inner_board_string[0] != "." and inner_board_string[0] != "D") and (inner_board_string[0] == inner_board_string[4] == inner_board_string[8]):
-        return 1 if inner_board_string[0] == "X" else -1
-    if (inner_board_string[6] != "." and inner_board_string[6] != "D") and (inner_board_string[6] == inner_board_string[4] == inner_board_string[2]):
-        return 1 if inner_board_string[6] == "X" else -1
+    win_positions = [
+        #horizontals
+        (0,1,2),
+        (3,4,5),
+        (6,7,8),
+        #columns
+        (0,3,6),
+        (1,4,7),
+        (2,5,8),
+        #diags
+        (0,4,8),
+        (6,4,2)
+    ]
+    for a, b, c in win_positions:
+        if inner_board_string[a] not in (".", "D") and (inner_board_string[a] == inner_board_string[b] == inner_board_string[c]):
+            return math.inf if inner_board_string[a] == "X" else -math.inf
     #check draw
     if "." not in inner_board_string:
         return 0
     #no winner, game still going
     return None
 
+@cache
+def minimax(turn, outer_index, outer_board):
+    winner = score_board(outer_board)
+    if winner is not None:
+        return winner
+    if outer_board[outer_index].count(".") == 0:
+        return 0
+
+    if turn == "X":
+        best = -1
+        for i in range(9):
+            if outer_board[outer_index][i] == ".":
+                new_full_board = outer_board[:outer_index] + (outer_board[outer_index][:i] + turn + outer_board[outer_index][i+1:],) + outer_board[outer_index + 1:]
+                best = max(best, minimax("O", i, new_full_board))
+                if best == 1:
+                    return 1
+        return best
+    else:
+        best = 1
+        for i in range(9):
+            if outer_board[outer_index][i] == ".":
+                new_full_board = outer_board[:outer_index] + (
+                    outer_board[outer_index][:i] + turn + outer_board[outer_index][i + 1:],) + outer_board[
+                                     outer_index + 1:]
+                best = min(best, minimax("X", i, new_full_board))
+                if best == -1:
+                    return -1
+        return best
+
+def is_hashable(*args):
+    try:
+        hash(args)
+        return True
+    except TypeError:
+        return False
 
 if __name__ == '__main__':
-    board = "........./........./........./........./........./........./........./........./........."
+    board = (".........",".........",".........",".........",".........",".........",".........",".........",".........")
     print_board(board)
-    print(check_winner(board))
+    print(score_board(board))
+    print(score_inner_board("X" * 9))
