@@ -78,34 +78,34 @@ def score_inner_board(inner_board_string):
     #no winner, game still going
     return score
 
-@cache
-def minimax(turn, outer_index, outer_board):
-    winner = score_board(outer_board)
-    if winner is not None:
-        return winner
-    if outer_board[outer_index].count(".") == 0:
-        return 0
-
-    if turn == "X":
-        best = -1
-        for i in range(9):
-            if outer_board[outer_index][i] == ".":
-                new_full_board = outer_board[:outer_index] + (outer_board[outer_index][:i] + turn + outer_board[outer_index][i+1:],) + outer_board[outer_index + 1:]
-                best = max(best, minimax("O", i, new_full_board))
-                if best == 1:
-                    return 1
-        return best
+def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta = math.inf):
+    score = score_board(outer_board)
+    if score == math.inf or score == -math.inf or depth == 0:
+        return score
+    valid_boards = []
+    if outer_board[outer_index].count(".") > 0:
+        valid_boards = [outer_index]
     else:
-        best = 1
-        for i in range(9):
-            if outer_board[outer_index][i] == ".":
-                new_full_board = outer_board[:outer_index] + (
-                    outer_board[outer_index][:i] + turn + outer_board[outer_index][i + 1:],) + outer_board[
-                                     outer_index + 1:]
-                best = min(best, minimax("X", i, new_full_board))
-                if best == -1:
-                    return -1
-        return best
+        valid_boards = [i for i in range(9) if outer_board[i].count(".") > 0]
+
+    for valid_outer_index in valid_boards:
+        if turn == "X":
+            for i in range(9):
+                if outer_board[valid_outer_index][i] == ".":
+                    new_full_board = outer_board[:valid_outer_index] + (outer_board[valid_outer_index][:i] + turn + outer_board[valid_outer_index][i+1:],) + outer_board[valid_outer_index + 1:]
+                    alpha = max(alpha, minimax("O", i, new_full_board, depth - 1, alpha, beta))
+                    if alpha >= beta:
+                        return alpha
+        else:
+            for i in range(9):
+                if outer_board[valid_outer_index][i] == ".":
+                    new_full_board = outer_board[:valid_outer_index] + (
+                        outer_board[valid_outer_index][:i] + turn + outer_board[valid_outer_index][i + 1:],) + outer_board[
+                                         valid_outer_index + 1:]
+                    beta = min(beta, minimax("X", i, new_full_board, depth - 1, alpha, beta))
+                    if beta <= alpha:
+                        return beta
+    return alpha if turn == "X" else beta
 
 def is_hashable(*args):
     try:
@@ -117,5 +117,4 @@ def is_hashable(*args):
 if __name__ == '__main__':
     board = (".........",".........",".........",".........",".........",".........",".........",".........",".........")
     print_board(board)
-    print(score_board(board))
-    print(score_inner_board("X.X...X.."))
+    print(minimax("X", 0, board))
