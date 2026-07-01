@@ -2,29 +2,24 @@ from functools import cache
 import math
 
 def print_board(board):
-    for outer_row in range(3):
+    for big_row in range(3):
         for inner_row in range(3):
-            r = outer_row * 3 + inner_row
-            row = board[r]
-
             output = []
-
             for big_col in range(3):
-                chunk = row[big_col * 3:(big_col + 1) * 3]
+                b = big_row * 3 + big_col
+                sub = board[b]
 
-                for inner_col, cell in enumerate(chunk):
-                    if cell == ".":
-                        index = inner_row * 3 + inner_col
-                        output.append(str(index))
-                    else:
-                        output.append(cell)
+                for inner_col in range(3):
+                    idx = inner_row * 3 + inner_col
+                    cell = sub[idx]
+                    output.append(str(idx) if cell == "." else cell)
 
                 if big_col != 2:
                     output.append("|")
 
             print(" ".join(output))
 
-        if outer_row != 2:
+        if big_row != 2:
             print("------+-------+------")
 
 @cache
@@ -107,14 +102,19 @@ def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta 
                         return beta
     return alpha if turn == "X" else beta
 
-def is_hashable(*args):
-    try:
-        hash(args)
-        return True
-    except TypeError:
-        return False
+def find_best(turn, board, outer_index = 0):
+    best_move = {"board": board, "score": -math.inf if turn == "X" else math.inf}
+    for i in range(9):
+        if board[outer_index][i] == ".":
+            new_board = board[:outer_index] + (board[outer_index][:i] + turn + board[outer_index][i+1:],) + board[outer_index+1:]
+            new_score = minimax("O" if turn == "X" else "X", i, new_board, 4)
+            if (turn == "X" and new_score > best_move["score"]) or (turn == "O" and new_score < best_move["Score"]):
+                best_move["board"] = new_board
+                best_move["score"] = new_score
+    return best_move
+
 
 if __name__ == '__main__':
     board = (".........",".........",".........",".........",".........",".........",".........",".........",".........")
     print_board(board)
-    print(minimax("X", 0, board))
+    print(find_best("X", board))
