@@ -67,6 +67,9 @@ def score_inner_board(inner_board_string):
                 if inner_board_string[b] not in (".", "D") and inner_board_string[b] == inner_board_string[c]:
                     score += (10 if inner_board_string[b] == "X" else -10)
 
+    single_scores = [2,1,2,1,4,1,2,1,2]
+    for i in range(9):
+        score += (single_scores[i] if inner_board_string[i] == "X" else -single_scores[i])
     #check draw
     if "." not in inner_board_string:
         return 0
