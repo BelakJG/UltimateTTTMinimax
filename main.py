@@ -30,6 +30,7 @@ def print_board(board):
 @cache
 def score_board(full_board):
     outer_board = ""
+    score = 0
     for inner_board in full_board:
         result = score_inner_board(inner_board)
         if result == math.inf:
@@ -38,13 +39,13 @@ def score_board(full_board):
             outer_board += "O"
         elif result == 0:
             outer_board += "D"
-        elif result is None:
+        else:
             outer_board += "."
-    return score_inner_board(outer_board)
+        score += result
+    return score + (score_inner_board(outer_board) * 100)
 
 @cache
 def score_inner_board(inner_board_string):
-    #horizontals
     win_positions = [
         #horizontals
         (0,1,2),
@@ -58,14 +59,24 @@ def score_inner_board(inner_board_string):
         (0,4,8),
         (6,4,2)
     ]
+    score = 0
     for a, b, c in win_positions:
-        if inner_board_string[a] not in (".", "D") and (inner_board_string[a] == inner_board_string[b] == inner_board_string[c]):
-            return math.inf if inner_board_string[a] == "X" else -math.inf
+        if inner_board_string[a] not in (".", "D"):
+            if inner_board_string[a] == inner_board_string[b] == inner_board_string[c]:
+                return math.inf if inner_board_string[a] == "X" else -math.inf
+            else:
+                if inner_board_string[a] == inner_board_string[b]:
+                    score += (10 if inner_board_string[a] == "X" else -10)
+                if inner_board_string[a] == inner_board_string[c]:
+                    score += (10 if inner_board_string[a] == "X" else -10)
+                if inner_board_string[b] not in (".", "D") and inner_board_string[b] == inner_board_string[c]:
+                    score += (10 if inner_board_string[b] == "X" else -10)
+
     #check draw
     if "." not in inner_board_string:
         return 0
     #no winner, game still going
-    return None
+    return score
 
 @cache
 def minimax(turn, outer_index, outer_board):
@@ -107,4 +118,4 @@ if __name__ == '__main__':
     board = (".........",".........",".........",".........",".........",".........",".........",".........",".........")
     print_board(board)
     print(score_board(board))
-    print(score_inner_board("X" * 9))
+    print(score_inner_board("X.X...X.."))
