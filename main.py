@@ -12,7 +12,7 @@ def print_board(board):
                 for inner_col in range(3):
                     idx = inner_row * 3 + inner_col
                     cell = sub[idx]
-                    output.append(str(idx) if cell == "." else cell)
+                    output.append(str(idx + 1) if cell == "." else cell)
 
                 if big_col != 2:
                     output.append("|")
@@ -69,7 +69,10 @@ def score_inner_board(inner_board_string):
 
     single_scores = [2,1,2,1,4,1,2,1,2]
     for i in range(9):
-        score += (single_scores[i] if inner_board_string[i] == "X" else -single_scores[i])
+        if inner_board_string[i] == "X":
+            score += single_scores[i]
+        elif inner_board_string[i] == "O":
+            score -= single_scores[i]
     #check draw
     if "." not in inner_board_string:
         return 0
