@@ -30,13 +30,15 @@ def score_board(full_board):
         result = score_inner_board(inner_board)
         if result == math.inf:
             outer_board += "X"
+            score += 50000
         elif result == -math.inf:
             outer_board += "O"
+            score -= 50000
         elif result == 0:
             outer_board += "D"
         else:
             outer_board += "."
-        score += result
+            score += result
     return score + (score_inner_board(outer_board) * 100)
 
 @cache
