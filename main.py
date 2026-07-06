@@ -1,5 +1,7 @@
 from functools import cache
 import math
+max_depth = 6
+first_turn = True
 
 def print_board(board):
     for big_row in range(3):
@@ -93,7 +95,7 @@ def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta 
     if target_board_score not in (math.inf, -math.inf) and "." in outer_board[outer_index]:
         valid_boards = [outer_index]
     else:
-        valid_boards = [i for i in range(9) if score_inner_board(outer_board[i]) not in (math.inf, -math.inf, 0)]
+        valid_boards = [i for i in range(9) if score_inner_board(outer_board[i]) not in (math.inf, -math.inf) and "." in outer_board[i]]
     if not valid_boards:
         return 0
 
@@ -117,10 +119,15 @@ def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta 
     return alpha if turn == "X" else beta
 
 def find_best(turn, board, outer_index = 0):
+    global max_depth
+    global first_turn
     best_move = {"board": board, "score": -math.inf if turn == "X" else math.inf, "played-inner": -1, "played-outer": -1}
     valid_boards = []
     target_board_score = score_inner_board(board[outer_index])
-    if target_board_score not in (math.inf, -math.inf) and "." in board[outer_index]:
+    if first_turn:
+        first_turn = False
+        valid_boards = [0,1,2,3,4,5,6,7,8]
+    elif target_board_score not in (math.inf, -math.inf) and "." in board[outer_index]:
         valid_boards = [outer_index]
     else:
         valid_boards = [i for i in range(9) if (score_inner_board(board[i]) not in (math.inf, -math.inf) and "." in board[i])]
@@ -129,7 +136,7 @@ def find_best(turn, board, outer_index = 0):
         for i in range(9):
             if board[valid_outer][i] == ".":
                 new_board = board[:valid_outer] + (board[valid_outer][:i] + turn + board[valid_outer][i+1:],) + board[valid_outer+1:]
-                new_score = minimax("O" if turn == "X" else "X", i, new_board, 4)
+                new_score = minimax("O" if turn == "X" else "X", i, new_board, max_depth)
                 if (turn == "X" and new_score > best_move["score"]) or (turn == "O" and new_score < best_move["score"]):
                     best_move["board"] = new_board
                     best_move["score"] = new_score
