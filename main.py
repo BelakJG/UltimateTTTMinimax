@@ -39,7 +39,7 @@ def score_board(full_board):
         else:
             outer_board += "."
             score += result
-    return score + (score_inner_board(outer_board) * 100)
+    return score + (score_inner_board(outer_board) * 1000)
 
 @cache
 def score_inner_board(inner_board_string):
@@ -58,18 +58,21 @@ def score_inner_board(inner_board_string):
     ]
     score = 0
     for a, b, c in win_positions:
-        if inner_board_string[a] not in (".", "D"):
-            if inner_board_string[a] == inner_board_string[b] == inner_board_string[c]:
-                return math.inf if inner_board_string[a] == "X" else -math.inf
-            else:
-                if inner_board_string[a] == inner_board_string[b]:
-                    score += (10 if inner_board_string[a] == "X" else -10)
-                if inner_board_string[a] == inner_board_string[c]:
-                    score += (10 if inner_board_string[a] == "X" else -10)
-                if inner_board_string[b] not in (".", "D") and inner_board_string[b] == inner_board_string[c]:
-                    score += (10 if inner_board_string[b] == "X" else -10)
+        line = inner_board_string[a] + inner_board_string[b] + inner_board_string[c]
+        x_count = line.count("X")
+        o_count = line.count("O")
+        empty = line.count(".")
 
-    single_scores = [2,1,2,1,4,1,2,1,2]
+        if x_count == 3:
+            return math.inf
+        if o_count == 3:
+            return -math.inf
+        if x_count == 2 and empty == 1:
+            score += 20
+        if o_count == 2 and empty == 1:
+            score -= 20
+
+    single_scores = [2,1,2,1,6,1,2,1,2]
     for i in range(9):
         if inner_board_string[i] == "X":
             score += single_scores[i]
@@ -83,13 +86,16 @@ def score_inner_board(inner_board_string):
 
 def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta = math.inf):
     score = score_board(outer_board)
-    if score == math.inf or score == -math.inf or depth == 0:
+    if score in (math.inf, -math.inf, 0) or depth == 0:
         return score
     valid_boards = []
-    if outer_board[outer_index].count(".") > 0:
+    target_board_score = score_inner_board(outer_board[outer_index])
+    if target_board_score not in (math.inf, -math.inf, 0):
         valid_boards = [outer_index]
     else:
-        valid_boards = [i for i in range(9) if outer_board[i].count(".") > 0]
+        valid_boards = [i for i in range(9) if score_inner_board(outer_board[i]) not in (math.inf, -math.inf, 0)]
+    if not valid_boards:
+        return 0
 
     for valid_outer_index in valid_boards:
         if turn == "X":
