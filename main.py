@@ -34,7 +34,7 @@ def score_board(full_board):
         elif result == -math.inf:
             outer_board += "O"
             score -= 50000
-        elif result == 0:
+        elif result == 0 and "." not in inner_board:
             outer_board += "D"
         else:
             outer_board += "."
@@ -90,7 +90,7 @@ def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta 
         return score
     valid_boards = []
     target_board_score = score_inner_board(outer_board[outer_index])
-    if target_board_score not in (math.inf, -math.inf, 0):
+    if target_board_score not in (math.inf, -math.inf) and "." in outer_board[outer_index]:
         valid_boards = [outer_index]
     else:
         valid_boards = [i for i in range(9) if score_inner_board(outer_board[i]) not in (math.inf, -math.inf, 0)]
@@ -117,18 +117,48 @@ def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta 
     return alpha if turn == "X" else beta
 
 def find_best(turn, board, outer_index = 0):
-    best_move = {"board": board, "score": -math.inf if turn == "X" else math.inf}
-    for i in range(9):
-        if board[outer_index][i] == ".":
-            new_board = board[:outer_index] + (board[outer_index][:i] + turn + board[outer_index][i+1:],) + board[outer_index+1:]
-            new_score = minimax("O" if turn == "X" else "X", i, new_board, 4)
-            if (turn == "X" and new_score > best_move["score"]) or (turn == "O" and new_score < best_move["Score"]):
-                best_move["board"] = new_board
-                best_move["score"] = new_score
-    return best_move
+    best_move = {"board": board, "score": -math.inf if turn == "X" else math.inf, "played-inner": -1, "played-outer": -1}
+    valid_boards = []
+    target_board_score = score_inner_board(board[outer_index])
+    if target_board_score not in (math.inf, -math.inf) and "." in board[outer_index]:
+        valid_boards = [outer_index]
+    else:
+        valid_boards = [i for i in range(9) if (score_inner_board(board[i]) not in (math.inf, -math.inf) and "." in board[i])]
+        print(valid_boards)
+    for valid_outer in valid_boards:
+        for i in range(9):
+            if board[valid_outer][i] == ".":
+                new_board = board[:valid_outer] + (board[valid_outer][:i] + turn + board[valid_outer][i+1:],) + board[valid_outer+1:]
+                new_score = minimax("O" if turn == "X" else "X", i, new_board, 4)
+                if (turn == "X" and new_score > best_move["score"]) or (turn == "O" and new_score < best_move["score"]):
+                    best_move["board"] = new_board
+                    best_move["score"] = new_score
+                    best_move["played-inner"] = i + 1
+                    best_move["played-outer"] = valid_outer + 1
+    print(f"Your best move is (outer: {best_move['played-outer']}, inner: {best_move['played-inner']}, score: {best_move['score']})")
+    return best_move["board"], best_move["played-inner"] - 1
 
 
 if __name__ == '__main__':
     board = (".........",".........",".........",".........",".........",".........",".........",".........",".........")
-    print_board(board)
-    print(find_best("X", board))
+    next_outer = 0
+    turn = "X"
+    while True:
+        print_board(board)
+        new_board, played_inner = find_best(turn, board, next_outer)
+        if (score_board(new_board)) in (math.inf, -math.inf):
+            break
+
+        turn = "O" if turn == "X" else "X"
+        if score_inner_board(new_board[played_inner]) in (math.inf, -math.inf) or "." not in new_board[played_inner]:
+            next_outer = int(input("What outer board did your opponent play?: ")) - 1
+        else:
+            next_outer = played_inner
+        op_inner = int(input("What inner board index did your opponent play?: ")) - 1
+        board = new_board[:next_outer] + (new_board[next_outer][:op_inner] + turn + new_board[next_outer][op_inner+1:],) + new_board[next_outer+1:]
+        turn = "O" if turn == "X" else "X"
+        next_outer = op_inner
+        if score_board(board) in (math.inf, -math.inf):
+            break
+
+    print(f"Player {turn} wins!")
