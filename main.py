@@ -1,6 +1,6 @@
 from functools import cache
 import math
-max_depth = 6
+max_depth = 7
 first_turn = True
 
 def print_board(board):
@@ -88,7 +88,7 @@ def score_inner_board(inner_board_string):
 
 def minimax(turn, outer_index, outer_board, depth = 10, alpha = -math.inf, beta = math.inf):
     score = score_board(outer_board)
-    if score in (math.inf, -math.inf, 0) or depth == 0:
+    if score in (math.inf, -math.inf) or depth == 0:
         return score
     valid_boards = []
     target_board_score = score_inner_board(outer_board[outer_index])
@@ -149,7 +149,13 @@ def find_best(turn, board, outer_index = 0):
 if __name__ == '__main__':
     board = (".........",".........",".........",".........",".........",".........",".........",".........",".........")
     next_outer = 0
-    turn = "X"
+    turn = "X" if int(input("Are you player 1 or 2?: ")) == 1 else "O"
+    if turn == "O":
+        outer = int(input("What outer board did X play?: ")) - 1
+        inner = int(input("What inner board did X play?: ")) - 1
+        board = board[:outer] + (board[outer][:inner] + "X" + board[outer][inner + 1:],) + board[outer + 1:]
+        next_outer = inner
+        first_turn = False
     while True:
         print_board(board)
         new_board, played_inner = find_best(turn, board, next_outer)
